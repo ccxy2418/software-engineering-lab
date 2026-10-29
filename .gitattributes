@@ -1,3 +1,6 @@
 requirements.md text eol=lf
 chat.txt text eol=lf
 report.md text eol=lf
+*.md text eol=lf
+*.pdf binary
+*.zip binary
