@@ -1,0 +1,56 @@
+@startuml
+title 校园外卖点餐与外卖柜代送系统 · 组件图
+skinparam componentStyle rectangle
+skinparam linetype ortho
+top to bottom direction
+
+component "角色界面\n顾客 / 商家 / 配送员 / 管理员" as UI
+
+package "C++ 应用" {
+  component "请求入口与工作线程池" as Entry
+  component "账号与配送资格" as Auth
+  component "店铺、菜品与购物车" as Catalog
+  component "普通订单" as Order
+  component "外卖柜代送" as Errand
+  component "共用配送服务" as Delivery
+  component "模拟资金" as Money
+  component "平台管理与异常处理" as Admin
+  component "定时调度" as Timer
+  component "数据访问" as Storage
+}
+
+database "关系数据库" as DB
+folder "受控照片存储" as Photos
+
+UI --> Entry : 提交请求
+Timer --> Entry : 投递超时与清理任务
+Entry --> Auth : 身份与角色校验
+Entry --> Catalog
+Entry --> Order
+Entry --> Errand
+Entry --> Delivery
+Entry --> Admin
+
+Order --> Catalog : 校验菜品与库存
+Order --> Money : 模拟付款与退款
+Errand --> Money : 模拟付款、退款与结算
+Order --> Delivery : 商家接单后建立任务
+Errand --> Delivery : 付款发布时建立任务
+Delivery --> Auth : 检查配送资格
+
+Auth --> Storage
+Catalog --> Storage
+Order --> Storage
+Errand --> Storage
+Delivery --> Storage
+Money --> Storage
+Admin --> Storage
+Storage --> DB
+Storage --> Photos
+
+note right of Admin
+  配送资格审核、配送区域配置、
+  异常处置与日志查询。
+  业务变更通过对应服务执行。
+end note
+@enduml

@@ -1,0 +1,44 @@
+@startuml
+title 共用配送任务 · 状态图
+skinparam shadowing false
+
+state "待领取" as Available
+state "已领取" as Claimed
+state "配送中" as Transit
+state "已送达" as Delivered
+state "已完成" as Completed
+state "已取消" as Cancelled
+state "配送异常" as Issue
+
+[*] --> Available : 商家接单或柜代送付款发布
+Available --> Claimed : 领取成功 / 绑定唯一承接人
+Claimed --> Transit : 当前承接人确认取餐 [符合来源规则]
+Transit --> Delivered : 当前承接人标记送达
+Delivered --> Completed : 下单人或发布者确认收货
+Completed --> [*]
+Cancelled --> [*]
+
+Available --> Cancelled : 来源业务取消\n或柜代送发布满30分钟仍未领取
+Claimed --> Cancelled : 尚未取餐且取消获准
+Claimed --> Issue : 取餐异常
+Transit --> Issue : 配送异常
+Delivered --> Issue : 送达后争议
+Issue --> Cancelled : 管理员结案取消
+
+note right of Claimed
+  普通配送须等商家出餐。
+  柜代送按授权和有效期读取取餐资料；
+  接单后未取餐，取消须由当前承接人同意。
+end note
+
+note right of Issue
+  普通配送经管理员核实后可恢复原阶段，
+  前提是可以继续履约且原承接关系有效。
+  柜代送异常走结案流程。
+end note
+
+note right of Completed
+  柜代送确认完成时登记一次模拟结算。
+  退款与结算进度由资金记录单独维护。
+end note
+@enduml

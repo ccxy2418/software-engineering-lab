@@ -1,0 +1,27 @@
+@startuml
+title 普通订单 · 下单与备餐状态图
+skinparam shadowing false
+
+state "待支付" as Unpaid
+state "待商家接单" as Pending
+state "制作中" as Preparing
+state "待取餐" as Ready
+state "已取消" as Cancelled
+
+[*] -down-> Unpaid : 提交订单 / 保存快照、扣减库存
+Unpaid -down-> Pending : 模拟付款成功
+Pending -down-> Preparing : 商家接单 / 创建待领取的配送任务
+Preparing -down-> Ready : 商家确认出餐
+
+Unpaid -right-> Cancelled : 顾客取消或创建满10分钟未付款\n恢复库存，无需退款
+Pending -right-> Cancelled : 顾客取消、商家拒单或付款满5分钟未接单\n恢复库存并发起模拟退款
+Preparing -right-> Cancelled : 商家同意取消且尚未取餐\n发起退款，库存不恢复
+Ready -right-> Cancelled : 商家同意取消且尚未取餐\n发起退款，库存不恢复
+Cancelled --> [*]
+
+note left of Ready
+  商家接单后即可领取配送任务。
+  出餐后，当前承接人才可确认取餐。
+  后续配送流程见图 4.2。
+end note
+@enduml

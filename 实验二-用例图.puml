@@ -1,0 +1,88 @@
+@startuml
+title 校园外卖点餐与外卖柜代送系统 · 用例图
+top to bottom direction
+skinparam packageStyle rectangle
+skinparam linetype polyline
+skinparam nodesep 45
+skinparam ranksep 30
+
+actor "顾客" as Customer
+actor "商家" as Merchant
+actor "配送员" as Courier
+actor "平台管理员" as Admin
+
+Customer -[hidden]right-> Merchant
+Merchant -[hidden]right-> Courier
+Courier -[hidden]right-> Admin
+
+rectangle "校园外卖点餐与外卖柜代送系统" {
+  package "顾客端" {
+    usecase "查询店铺与菜品" as Browse
+    usecase "管理购物车并下单" as PlaceOrder
+    usecase "为普通订单模拟付款" as Pay
+    usecase "录入取餐资料、\n模拟付款并发布代送单" as Publish
+    usecase "查询订单与代送进度" as Track
+    usecase "申请取消与查看退款" as Cancel
+    usecase "确认收货" as Confirm
+    usecase "申请配送资格" as Apply
+    Browse -[hidden]down-> PlaceOrder
+    PlaceOrder -[hidden]down-> Pay
+    Pay -[hidden]down-> Publish
+    Publish -[hidden]down-> Track
+    Track -[hidden]down-> Cancel
+    Cancel -[hidden]down-> Confirm
+    Confirm -[hidden]down-> Apply
+  }
+
+  package "商家端" {
+    usecase "维护店铺与菜品库存" as ManageStore
+    usecase "处理接单、拒单与出餐" as ProcessOrder
+    usecase "查询与汇总本店订单" as Summarize
+    ManageStore -[hidden]down-> ProcessOrder
+    ProcessOrder -[hidden]down-> Summarize
+  }
+
+  package "配送端" {
+    usecase "查询并领取两类配送任务" as Claim
+    usecase "查看本人配送任务" as MyTasks
+    usecase "确认取餐与标记送达" as Deliver
+    usecase "报告配送异常" as ReportIssue
+    Claim -[hidden]down-> MyTasks
+    MyTasks -[hidden]down-> Deliver
+    Deliver -[hidden]down-> ReportIssue
+  }
+
+  package "管理端" {
+    usecase "审核配送资格" as Review
+    usecase "维护校内配送区域" as Configure
+    usecase "处理争议与配送异常" as Resolve
+    usecase "查询业务操作日志" as Logs
+    Review -[hidden]down-> Configure
+    Configure -[hidden]down-> Resolve
+    Resolve -[hidden]down-> Logs
+  }
+}
+
+Customer -- Browse
+Customer -- PlaceOrder
+Customer -- Pay
+Customer -- Publish
+Customer -- Track
+Customer -- Cancel
+Customer -- Confirm
+Customer -- Apply
+
+Merchant -- ManageStore
+Merchant -- ProcessOrder
+Merchant -- Summarize
+
+Courier -- Claim
+Courier -- MyTasks
+Courier -- Deliver
+Courier -- ReportIssue
+
+Admin -- Review
+Admin -- Configure
+Admin -- Resolve
+Admin -- Logs
+@enduml

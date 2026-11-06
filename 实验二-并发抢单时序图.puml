@@ -1,0 +1,55 @@
+@startuml
+title 两名配送员同时领取柜代送任务 · 时序图
+hide footbox
+skinparam shadowing false
+autonumber
+
+actor "配送员 A" as A
+actor "配送员 B" as B
+participant "共用配送服务\nDeliveryService" as Service
+database "关系数据库" as DB
+
+note over A,B
+两人从统一大厅看到同一待领取任务。
+大厅仅提供允许公开的信息。
+end note
+
+par 工作线程 A
+  A -> Service : claim(A, deliveryId)\n附请求标识 reqA
+  Service -> DB : 提交领取事务 A
+else 工作线程 B
+  B -> Service : claim(B, deliveryId)\n附请求标识 reqB
+  Service -> DB : 提交领取事务 B
+end
+
+note over Service,DB
+每笔事务先识别同一请求的重试，再校验最新条件：
+资格有效、任务待领取、无承接人、
+未到接单期限、配送员不是发布者。
+end note
+
+group 本例中 A 先提交成功
+  DB -> DB : 原子写入承接人 A、领取时间、\n已领取状态及请求结果
+  DB --> Service : 事务 A 成功
+  Service --> A : 领取成功
+  DB --> Service : 事务 B 条件更新失败
+  Service --> B : 任务已被领取
+end
+
+opt A 未收到响应，使用 reqA 重试
+  A -> Service : 重发原领取请求
+  Service -> DB : 查询已保存的请求结果
+  DB --> Service : 原请求领取成功
+  Service --> A : 返回原结果
+end
+
+A -> Service : 请求取餐资料
+Service -> DB : 校验当前承接关系和资料有效期
+DB --> Service : 返回仍可访问的资料
+Service --> A : 显示授权资料
+
+opt B 请求同一任务的私密资料
+  B -> Service : 请求取餐资料
+  Service --> B : 拒绝访问
+end
+@enduml
